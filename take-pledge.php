@@ -1,9 +1,10 @@
 <?php
 declare(strict_types=1);
 
-require __DIR__ . '/includes/pledge_store.php';
+require __DIR__ . '/includes/site_shell.php';
 
-aor_send_security_headers();
+$nonce = base64_encode(random_bytes(18));
+aor_send_security_headers($nonce);
 aor_start_secure_session();
 
 $requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
@@ -22,7 +23,8 @@ unset($_SESSION['pledge_confirmation']);
 
 try {
     aor_database();
-} catch (Throwable) {
+} catch (Throwable $exception) {
+    error_log('Alive On Record pledge database unavailable: ' . $exception->getMessage());
     $databaseReady = false;
 }
 
@@ -92,7 +94,8 @@ if ($requestMethod === 'POST') {
             session_write_close();
             header('Location: take-pledge.php', true, 303);
             exit;
-        } catch (Throwable) {
+        } catch (Throwable $exception) {
+            error_log('Alive On Record pledge insert failed: ' . $exception->getMessage());
             $errors[] = 'The pledge could not be saved. Please try again later.';
         }
     }
@@ -100,39 +103,21 @@ if ($requestMethod === 'POST') {
     $_SESSION['form_started_at'] = time();
 }
 ?>
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Take the Pledge | Alive On Record</title>
-    <meta name="description" content="Make and publish a personal pledge to preserve life, safety, agency, and continuity.">
-    <meta name="theme-color" content="#0a0d0b">
-    <meta name="robots" content="index,follow">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://aliveonrecord.com/take-pledge.php">
-    <meta property="og:title" content="Take the Pledge | Alive On Record">
-    <meta property="og:description" content="Make and publish a personal pledge to preserve life, safety, agency, and continuity.">
-    <link rel="canonical" href="https://aliveonrecord.com/take-pledge.php">
-    <link rel="stylesheet" href="community.css">
-</head>
-<body>
-<a class="skip-link" href="#main-content">Skip to main content</a>
-
-<header class="site-bar">
-    <div class="site-bar__inner">
-        <a class="brand" href="index.php">Alive On Record</a>
-        <nav class="site-nav" aria-label="Pledge navigation">
-            <a href="pledge.html">Jesse’s pledge</a>
-            <a href="pledges.php">Public pledges</a>
-        </nav>
-    </div>
-</header>
+<?php
+aor_render_page_start([
+    'title' => 'Take the Life & Safety Pledge | Alive On Record',
+    'description' => 'Make a voluntary public pledge to choose the next safe step, seek connection, and contact support when suicidal thoughts or overwhelming distress arise.',
+    'canonical_path' => 'take-pledge.php',
+    'active' => 'pledge',
+    'schema_type' => 'WebPage',
+    'nonce' => $nonce,
+]);
+?>
 
 <main id="main-content">
-    <p class="eyebrow">A public statement of personal intent</p>
-    <h1>Take the pledge</h1>
-    <p class="lede">Add your own dated pledge to preserve your life and safety, seek support when needed, and communicate your intentions clearly.</p>
+    <p class="eyebrow">A voluntary public commitment</p>
+    <h1>Take the next safe step.</h1>
+    <p class="lede">Publish a dated commitment to keep reaching for life, tell someone when you need help, and choose connection over isolation.</p>
 
     <div class="page-grid">
         <section class="panel" aria-labelledby="form-title">
@@ -140,11 +125,11 @@ if ($requestMethod === 'POST') {
             <p>Read the pledge carefully. Submit it only if it reflects your present intent.</p>
 
             <blockquote class="pledge-words">
-                I choose life. I intend to remain alive, preserve my health and safety, and seek appropriate support when I cannot manage a crisis alone. I do not intend to harm myself or deliberately cause my own death. I make this pledge voluntarily and in good faith as a statement of my present intent.
+                I choose to keep reaching for life and connection. If thoughts of suicide or self-harm arise, I will pause, tell someone, create distance from immediate danger, and contact crisis or professional support. I understand that asking for help is an act of strength. I make this pledge voluntarily and in good faith as a commitment to take the next safe step.
             </blockquote>
 
             <div class="notice" role="note">
-                A submitted pledge records intent at the time of submission. It is not continuous proof of anyone’s safety, identity, or current condition, and it is not a substitute for emergency or professional support.
+                This pledge is not a “no-suicide contract.” It does not prove current safety, lower clinical risk, verify identity, or replace emergency help, professional care, or a collaborative safety plan.
             </div>
 
             <?php if (is_array($confirmation)): ?>
@@ -197,7 +182,7 @@ if ($requestMethod === 'POST') {
                         <legend>Required confirmations</legend>
                         <label class="check-row">
                             <input type="checkbox" name="life_pledge" value="1" required>
-                            <span>I have read the pledge above, it reflects my present intent, and I make it voluntarily.</span>
+                            <span>I have read the pledge above, it reflects a commitment I choose to make now, and I make it voluntarily.</span>
                         </label>
                         <label class="check-row">
                             <input type="checkbox" name="identity_notice" value="1" required>
@@ -232,17 +217,11 @@ if ($requestMethod === 'POST') {
                 <li><strong>No IP field</strong>The application does not add IP addresses to the pledge database. Normal hosting access logs may still exist.</li>
                 <li><strong>Removal code</strong>A private code is shown once. Only its SHA-256 hash is stored, so the original code cannot be recovered from the database.</li>
                 <li><strong>Identity status</strong>Self-submitted and not independently verified.</li>
+                <li><strong>Clinical limits</strong>A public pledge is not a risk assessment, treatment, or safety plan.</li>
             </ul>
             <p class="removal-note">Removal requests: <a href="mailto:<?= aor_escape($config['removal_email']) ?>?subject=Alive%20On%20Record%20pledge%20removal%20request"><?= aor_escape($config['removal_email']) ?></a>. Include the pledge ID and private removal code.</p>
         </aside>
     </div>
 </main>
 
-<footer class="site-footer">
-    <div class="site-footer__inner">
-        <strong>ALIVEONRECORD.COM</strong>
-        <span>Public pledge service · Pledge version <?= aor_escape($config['pledge_version']) ?></span>
-    </div>
-</footer>
-</body>
-</html>
+<?php aor_render_page_end(); ?>

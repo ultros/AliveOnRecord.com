@@ -19,8 +19,8 @@ function aor_config(): array
         'database_path' => is_string($configuredPath) && trim($configuredPath) !== ''
             ? trim($configuredPath)
             : $defaultPath,
-        'pledge_version' => '1.0',
-        'consent_version' => '1.0',
+        'pledge_version' => '2.0',
+        'consent_version' => '2.0',
         'removal_email' => 'jesse.shelley@aliveonrecord.com',
         'public_list_limit' => 100,
     ];
@@ -47,7 +47,7 @@ function aor_database(): PDO
     }
 
     if (!extension_loaded('pdo_sqlite')) {
-        throw new RuntimeException('The pledge service is temporarily unavailable.');
+        throw new RuntimeException('PDO SQLite extension is not loaded.');
     }
 
     $config = aor_config();
@@ -55,11 +55,11 @@ function aor_database(): PDO
     $databaseDirectory = dirname($databasePath);
 
     if (!aor_path_is_absolute($databasePath)) {
-        throw new RuntimeException('The pledge service is temporarily unavailable.');
+        throw new RuntimeException('The SQLite database path must be absolute.');
     }
 
     if (!is_dir($databaseDirectory) && !@mkdir($databaseDirectory, 0700, true) && !is_dir($databaseDirectory)) {
-        throw new RuntimeException('The pledge service is temporarily unavailable.');
+        throw new RuntimeException('The SQLite database directory is unavailable.');
     }
 
     $database = new PDO('sqlite:' . $databasePath, null, null, [
@@ -234,11 +234,12 @@ function aor_start_secure_session(): void
     session_start();
 }
 
-function aor_send_security_headers(): void
+function aor_send_security_headers(?string $scriptNonce = null): void
 {
+    $scriptPolicy = $scriptNonce === null ? "'none'" : "'nonce-{$scriptNonce}'";
     header_remove('X-Powered-By');
     header('Content-Type: text/html; charset=UTF-8');
-    header("Content-Security-Policy: default-src 'none'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; form-action 'self'; base-uri 'none'");
+    header("Content-Security-Policy: default-src 'none'; style-src 'self'; script-src {$scriptPolicy}; img-src 'self' data:; font-src 'self'; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; form-action 'self'; base-uri 'none'");
     header('X-Content-Type-Options: nosniff');
     header('Referrer-Policy: no-referrer');
     header('Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()');

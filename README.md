@@ -1,26 +1,24 @@
 # AliveOnRecord.com
 
-The initial public source for **Alive On Record**, a personal safety, intent,
-continuity, and verification record.
+The public source for **Alive On Record**, a community life-and-safety pledge
+platform with suicide-prevention information and crisis-support pathways.
 
-The site is intentionally small and auditable: a PHP homepage, a standalone
-personal pledge document, a public community pledge flow backed by SQLite, and
-one optional Apache configuration file. It uses no external libraries and has
-no build step. It targets PHP 8 or newer on ordinary shared hosting.
+The site is intentionally small and auditable: a PHP community-pledge platform,
+a public pledge wall backed by SQLite, focused suicide-prevention resource
+pages, and one optional Apache configuration file. It uses no external
+libraries and has no build step. It targets PHP 8 or newer on ordinary shared
+hosting.
 
 ## Before publishing updates
 
-Edit the clearly marked configuration block at the top of `index.php`. In
-particular, `lastPersonalVerification` must only be changed after a real,
-manual personal verification. The server-generated `Page Generated` value is
-separate and does not prove personal verification.
+Review health and crisis wording against the current official sources linked on
+each prevention page. A pledge must never be represented as proof of safety, a
+clinical risk assessment, a no-suicide contract, treatment, or a replacement
+for an individualized safety plan.
 
-Timeline and evidence records are maintained in PHP arrays near the top of the
-same file. Do not publish invented evidence, hashes, timestamps, or allegations
-presented as fact.
-
-The dates and identifying fields in `pledge.html` are also deliberately static.
-Update them manually when the pledge itself is revised.
+The pledge wording and consent version are configured in the application code.
+Increase both versions when the meaning of the accepted pledge or publication
+consent changes.
 
 ## Local preview
 
@@ -31,9 +29,8 @@ document root at this directory.
 ## Deployment
 
 Upload the repository contents and, on compatible Apache hosting, retain
-`.htaccess`. The
-`documents`, `evidence`, and `media` directories are reserved for future files;
-the homepage does not require them.
+`.htaccess`. Keep `media/og.png` available at the published path because it is
+used by Open Graph and social-sharing metadata.
 
 The public pledge flow requires the PHP `PDO` and `pdo_sqlite` extensions. By
 default, its database is created at `../aliveonrecord-data/pledges.sqlite`,
