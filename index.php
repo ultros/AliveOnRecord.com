@@ -118,7 +118,7 @@ $cspNonce = base64_encode(random_bytes(18));
 
 header_remove('X-Powered-By');
 header('Content-Type: text/html; charset=UTF-8');
-header("Content-Security-Policy: default-src 'none'; style-src 'nonce-{$cspNonce}'; img-src 'self' data:; font-src 'self'; connect-src 'none'; media-src 'self'; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; form-action 'self'; base-uri 'none'; manifest-src 'self'; upgrade-insecure-requests");
+header("Content-Security-Policy: default-src 'none'; style-src 'nonce-{$cspNonce}'; img-src 'self' data:; font-src 'self'; connect-src 'none'; media-src 'self'; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; form-action 'self'; base-uri 'none'; manifest-src 'self'");
 header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: no-referrer');
 header('Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()');
@@ -361,6 +361,21 @@ $statusIsActive = strtoupper($recordStatus) === 'ACTIVE';
         .hero-summary { display: flex; flex-direction: column; justify-content: space-between; }
         .hero-summary p { max-width: 38rem; margin: 0; color: #d2d5d0; font-size: 1.05rem; }
         .record-code { margin-top: 2rem; color: var(--dim); font: 600 .75rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .04em; }
+
+        .text-link {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            margin-top: 1.4rem;
+            color: var(--ink);
+            font-size: .78rem;
+            font-weight: 750;
+            letter-spacing: .07em;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+
+        .text-link::after { content: "→"; color: var(--active); font-size: 1rem; }
 
         .section { padding: clamp(5rem, 10vw, 9rem) 0; border-top: 1px solid var(--line); }
 
@@ -618,6 +633,7 @@ $statusIsActive = strtoupper($recordStatus) === 'ACTIVE';
                 <li><a href="#evidence">Evidence</a></li>
                 <li><a href="#continuity">Continuity</a></li>
                 <li><a href="#verification">Verification</a></li>
+                <li><a href="pledge.html">Personal Pledge</a></li>
             </ul>
         </nav>
     </div>
@@ -648,7 +664,10 @@ $statusIsActive = strtoupper($recordStatus) === 'ACTIVE';
                     </div>
                 </div>
                 <div class="hero-summary">
-                    <p>This site maintains a public, dated record of my personal safety intentions, continuity information, and supporting documentation.</p>
+                    <div>
+                        <p>This site maintains a public, dated record of my personal safety intentions, continuity information, and supporting documentation.</p>
+                        <a class="text-link" href="pledge.html">Read my personal pledge</a>
+                    </div>
                     <div class="record-code">STATEMENT <?= e($statementId) ?><br>RECORD VERSION <?= e($recordVersion) ?></div>
                 </div>
             </div>
