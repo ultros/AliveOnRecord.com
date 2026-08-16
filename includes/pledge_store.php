@@ -20,7 +20,7 @@ function aor_config(): array
             ? trim($configuredPath)
             : $defaultPath,
         'pledge_version' => '3.0',
-        'consent_version' => '3.0',
+        'consent_version' => '3.1',
         'removal_email' => 'jesse.shelley@aliveonrecord.com',
         'public_list_limit' => 100,
     ];
@@ -40,6 +40,11 @@ function aor_pledge_options(): array
         'life-in-full' => 'My life is mine to live in full. I commit to protecting it, building it, and carrying it forward for the rest of my natural life.',
         'every-season' => 'I pledge myself to every season ahead—to the people I will love, the work I will do, the joy I will discover, and the person I will become.',
     ];
+}
+
+function aor_clear_migration_name(): string
+{
+    return '2026-08-16-clear-pre-location-pledges';
 }
 
 function aor_path_is_absolute(string $path): bool
@@ -82,12 +87,14 @@ function aor_database(): PDO
     $database->exec('PRAGMA foreign_keys = ON');
     $database->exec('PRAGMA busy_timeout = 5000');
     $database->exec('PRAGMA journal_mode = WAL');
+    $database->exec('PRAGMA secure_delete = ON');
 
     $database->exec(
         "CREATE TABLE IF NOT EXISTS pledges (
             id INTEGER PRIMARY KEY,
             public_id TEXT NOT NULL UNIQUE,
             display_name TEXT NOT NULL CHECK (length(display_name) BETWEEN 2 AND 80),
+            location TEXT NOT NULL CHECK (length(location) BETWEEN 2 AND 100),
             pledge_text TEXT,
             pledge_source TEXT,
             pledge_version TEXT NOT NULL,
@@ -106,6 +113,46 @@ function aor_database(): PDO
 
     if (!in_array('pledge_source', $columnNames, true)) {
         $database->exec('ALTER TABLE pledges ADD COLUMN pledge_source TEXT');
+    }
+
+    if (!in_array('location', $columnNames, true)) {
+        $database->exec('ALTER TABLE pledges ADD COLUMN location TEXT');
+    }
+
+    $database->exec(
+        "CREATE TABLE IF NOT EXISTS aor_migrations (
+            name TEXT PRIMARY KEY,
+            applied_at_utc TEXT NOT NULL
+        )"
+    );
+
+    $pledgesCleared = false;
+    $database->exec('BEGIN IMMEDIATE');
+    try {
+        $migrationName = aor_clear_migration_name();
+        $migrationCheck = $database->prepare('SELECT 1 FROM aor_migrations WHERE name = :name');
+        $migrationCheck->execute([':name' => $migrationName]);
+
+        if ($migrationCheck->fetchColumn() === false) {
+            $database->exec('DELETE FROM pledges');
+            $pledgesCleared = true;
+            $recordMigration = $database->prepare(
+                'INSERT INTO aor_migrations (name, applied_at_utc) VALUES (:name, :applied_at_utc)'
+            );
+            $recordMigration->execute([
+                ':name' => $migrationName,
+                ':applied_at_utc' => (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format(DateTimeInterface::ATOM),
+            ]);
+        }
+
+        $database->exec('COMMIT');
+    } catch (Throwable $exception) {
+        $database->exec('ROLLBACK');
+        throw $exception;
+    }
+
+    if ($pledgesCleared) {
+        $database->exec('PRAGMA wal_checkpoint(TRUNCATE)');
     }
 
     $database->exec(
@@ -136,6 +183,24 @@ function aor_normalize_pledge_text(string $pledgeText): string
     return trim($pledgeText);
 }
 
+function aor_normalize_location(string $location): string
+{
+    $location = trim($location);
+    $location = preg_replace('/[\x00-\x1F\x7F]/u', '', $location) ?? '';
+    $location = preg_replace('/\s+/u', ' ', $location) ?? '';
+
+    return trim($location);
+}
+
+function aor_location_is_valid(string $location): bool
+{
+    $length = aor_text_length($location);
+
+    return $length >= 2
+        && $length <= 100
+        && preg_match("/^[\\p{L}\\p{M}\\p{N} .,'’()\\-]+$/u", $location) === 1;
+}
+
 function aor_public_text_is_affirmative(string $text): bool
 {
     return preg_match(
@@ -161,9 +226,10 @@ function aor_create_removal_code(): string
     return 'AOR-REMOVE-' . strtoupper(bin2hex(random_bytes(12)));
 }
 
-function aor_create_pledge(string $displayName, string $pledgeText, string $pledgeSource): array
+function aor_create_pledge(string $displayName, string $location, string $pledgeText, string $pledgeSource): array
 {
     $displayName = aor_normalize_display_name($displayName);
+    $location = aor_normalize_location($location);
     $pledgeText = aor_normalize_pledge_text($pledgeText);
     $pledgeSource = trim($pledgeSource);
     $pledgeOptions = aor_pledge_options();
@@ -176,6 +242,10 @@ function aor_create_pledge(string $displayName, string $pledgeText, string $pled
 
     if (!aor_public_text_is_affirmative($displayName)) {
         throw new InvalidArgumentException('The public display name is not appropriate for the pledge record.');
+    }
+
+    if (!aor_location_is_valid($location)) {
+        throw new InvalidArgumentException('The public location is invalid.');
     }
 
     if (aor_text_length($pledgeText) < 20 || aor_text_length($pledgeText) > 500) {
@@ -206,13 +276,14 @@ function aor_create_pledge(string $displayName, string $pledgeText, string $pled
         try {
             $statement = $database->prepare(
                 'INSERT INTO pledges
-                    (public_id, display_name, pledge_text, pledge_source, pledge_version, consent_version, removal_token_hash, submitted_at_utc)
+                    (public_id, display_name, location, pledge_text, pledge_source, pledge_version, consent_version, removal_token_hash, submitted_at_utc)
                  VALUES
-                    (:public_id, :display_name, :pledge_text, :pledge_source, :pledge_version, :consent_version, :removal_token_hash, :submitted_at_utc)'
+                    (:public_id, :display_name, :location, :pledge_text, :pledge_source, :pledge_version, :consent_version, :removal_token_hash, :submitted_at_utc)'
             );
             $statement->execute([
                 ':public_id' => $publicId,
                 ':display_name' => $displayName,
+                ':location' => $location,
                 ':pledge_text' => $pledgeText,
                 ':pledge_source' => $pledgeSource,
                 ':pledge_version' => $config['pledge_version'],
@@ -224,6 +295,7 @@ function aor_create_pledge(string $displayName, string $pledgeText, string $pled
             return [
                 'public_id' => $publicId,
                 'display_name' => $displayName,
+                'location' => $location,
                 'pledge_text' => $pledgeText,
                 'pledge_source' => $pledgeSource,
                 'pledge_version' => $config['pledge_version'],
@@ -245,7 +317,7 @@ function aor_list_public_pledges(): array
     $config = aor_config();
     $limit = max(1, min(500, (int) $config['public_list_limit']));
     $statement = aor_database()->prepare(
-        'SELECT public_id, display_name, pledge_text, pledge_source, pledge_version, submitted_at_utc
+        'SELECT public_id, display_name, location, pledge_text, pledge_source, pledge_version, submitted_at_utc
          FROM pledges
          ORDER BY submitted_at_utc DESC, id DESC
          LIMIT :limit'

@@ -442,6 +442,7 @@ textarea:focus { border-color: var(--green); }
 
 .pledge-card__badge { color: var(--green); font-size: .66rem; font-weight: 790; letter-spacing: .1em; text-transform: uppercase; }
 .pledge-card h2 { margin: 1rem 0 .4rem; font-size: 1.4rem; line-height: 1.2; overflow-wrap: anywhere; }
+.pledge-card__location { margin: -.15rem 0 .65rem; color: var(--green); font-size: .74rem; font-weight: 700; letter-spacing: .04em; }
 .pledge-card p { margin: 0; color: var(--muted); font-size: .83rem; }
 .pledge-card__meta { margin-top: auto; padding-top: 1.1rem; border-top: 1px solid var(--line); color: var(--quiet); font: .69rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; overflow-wrap: anywhere; }
 

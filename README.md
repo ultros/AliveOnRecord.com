@@ -43,10 +43,17 @@ write that directory. To use a different non-public absolute path, set the
 
 The audited schema is in `schema.sql`; the application creates the same schema
 on first use. Participant email addresses and IP addresses are not stored in
-the pledge table. Public records contain only a display name, exact pledge text,
-pledge source, random pledge ID, pledge/consent versions, and submission time. A
-one-time removal code is shown after submission; only its SHA-256 hash is stored
-privately in SQLite.
+the pledge table. Public records contain only a display name, participant-chosen
+city/region/country location, exact pledge text, pledge source, random pledge ID,
+pledge/consent versions, and submission time. A one-time removal code is shown
+after submission; only its SHA-256 hash is stored privately in SQLite.
+
+The location-field release applies the one-time migration named
+`2026-08-16-clear-pre-location-pledges`. On the first database connection after
+deployment, it permanently deletes every earlier pledge row and records the
+migration so later pledges are never cleared again. The database file, schema,
+and indexes remain in place. SQLite secure-delete mode is enabled and the WAL is
+checkpointed and truncated after the clear.
 
 Removal requests are directed to `jesse.shelley@aliveonrecord.com`. After
 verifying the requested pledge ID, run the CLI-only removal tool:

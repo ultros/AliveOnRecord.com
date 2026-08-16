@@ -62,7 +62,7 @@ aor_render_page_start([
         </div>
         <ol class="steps-grid">
             <li><span>01</span><h3>Choose your words</h3><p>Select one of five permanent-life pledges or write a personal commitment of your own.</p></li>
-            <li><span>02</span><h3>Place it on record</h3><p>Publish your chosen name, exact pledge, and the date your commitment was made.</p></li>
+            <li><span>02</span><h3>Place it on record</h3><p>Publish your chosen name, public location, exact pledge, and the date your commitment was made.</p></li>
             <li><span>03</span><h3>Keep your removal code</h3><p>A private one-time code lets you request permanent deletion of your entry.</p></li>
         </ol>
     </section>

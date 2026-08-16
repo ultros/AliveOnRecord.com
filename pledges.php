@@ -69,6 +69,8 @@ aor_render_page_start([
                 <article class="pledge-card">
                     <span class="pledge-card__badge">Permanent life pledge</span>
                     <h2><?= aor_escape($pledge['display_name']) ?></h2>
+                    <?php $publicLocation = trim((string) ($pledge['location'] ?? '')); ?>
+                    <span class="pledge-card__location"><?= aor_escape($publicLocation !== '' ? $publicLocation : 'Location not listed') ?></span>
                     <?php $pledgeText = trim((string) ($pledge['pledge_text'] ?? '')); ?>
                     <p><?= $pledgeText !== '' ? '“' . aor_escape($pledgeText) . '”' : 'Permanent life commitment recorded.' ?></p>
                     <div class="pledge-card__meta">

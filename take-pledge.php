@@ -18,6 +18,7 @@ $config = aor_config();
 $pledgeOptions = aor_pledge_options();
 $errors = [];
 $displayName = '';
+$location = '';
 $selectedPledge = 'whole-life';
 $customPledge = '';
 $pledgeText = '';
@@ -47,6 +48,9 @@ if ($requestMethod === 'POST') {
     $honeypot = isset($_POST['website']) && is_string($_POST['website']) ? trim($_POST['website']) : '';
     $displayName = isset($_POST['display_name']) && is_string($_POST['display_name'])
         ? aor_normalize_display_name($_POST['display_name'])
+        : '';
+    $location = isset($_POST['location']) && is_string($_POST['location'])
+        ? aor_normalize_location($_POST['location'])
         : '';
     $selectedPledge = isset($_POST['pledge_choice']) && is_string($_POST['pledge_choice'])
         ? trim($_POST['pledge_choice'])
@@ -79,6 +83,10 @@ if ($requestMethod === 'POST') {
     } elseif (!aor_public_text_is_affirmative($displayName)) {
         $errors[] = 'Choose a public name suited to this affirmative life-pledge record.';
         $displayName = '';
+    }
+
+    if (!aor_location_is_valid($location)) {
+        $errors[] = 'Enter a public location between 2 and 100 characters using a city, region, or country.';
     }
 
     if ($selectedPledge === 'custom') {
@@ -117,7 +125,7 @@ if ($requestMethod === 'POST') {
 
     if ($errors === []) {
         try {
-            $pledge = aor_create_pledge($displayName, $pledgeText, $pledgeSource);
+            $pledge = aor_create_pledge($displayName, $location, $pledgeText, $pledgeSource);
             session_regenerate_id(true);
             $_SESSION['pledge_confirmation'] = $pledge;
             $_SESSION['last_submission_at'] = time();
@@ -169,7 +177,7 @@ aor_render_page_start([
                 <div class="success-box" role="status">
                     <h2>Your permanent life pledge is now on the public record.</h2>
                     <blockquote class="confirmation-pledge"><?= aor_escape($confirmation['pledge_text']) ?></blockquote>
-                    <span><?= aor_escape($confirmation['display_name']) ?> · <?= aor_escape(aor_format_submission_date($confirmation['submitted_at_utc'])) ?></span>
+                    <span><?= aor_escape($confirmation['display_name']) ?> · <?= aor_escape($confirmation['location']) ?> · <?= aor_escape(aor_format_submission_date($confirmation['submitted_at_utc'])) ?></span>
                     <strong class="success-id"><?= aor_escape($confirmation['public_id']) ?></strong>
                     <span class="label">Private removal code — shown once</span>
                     <strong class="success-id"><?= aor_escape($confirmation['removal_code']) ?></strong>
@@ -201,6 +209,12 @@ aor_render_page_start([
                         <label for="display-name">Public display name</label>
                         <input id="display-name" name="display_name" type="text" minlength="2" maxlength="80" required autocomplete="name" value="<?= aor_escape($displayName) ?>" aria-describedby="display-name-note">
                         <small class="field-note" id="display-name-note">Use your name or a public name you choose. It will appear with your pledge.</small>
+                    </div>
+
+                    <div class="field">
+                        <label for="location">Public location</label>
+                        <input id="location" name="location" type="text" minlength="2" maxlength="100" required autocomplete="address-level2" value="<?= aor_escape($location) ?>" aria-describedby="location-note">
+                        <small class="field-note" id="location-note">Use only the level you want public, such as city, region, or country. Do not enter a street address.</small>
                     </div>
 
                     <fieldset class="pledge-options">
@@ -235,7 +249,7 @@ aor_render_page_start([
                         </label>
                         <label class="check-row">
                             <input type="checkbox" name="publication_consent" value="1" required>
-                            <span>I consent to public display of my name, exact pledge, pledge ID, version, and submission date and time.</span>
+                            <span>I consent to public display of my name, location, exact pledge, pledge ID, version, and submission date and time.</span>
                         </label>
                     </fieldset>
 
@@ -257,6 +271,7 @@ aor_render_page_start([
             <p>Each entry is intentionally simple and lasting.</p>
             <ul class="privacy-list">
                 <li><strong>Your public name</strong>Displayed with the pledge exactly as submitted after spacing is normalized.</li>
+                <li><strong>Your public location</strong>Displayed at the city, region, or country level you choose.</li>
                 <li><strong>Your exact pledge</strong>The selected statement or your custom words appear on the public pledge wall.</li>
                 <li><strong>Your place in the record</strong>A unique pledge ID, pledge version, and UTC submission time accompany the commitment.</li>
                 <li><strong>Your private removal code</strong>A one-time code is shown after publication. Keep it with your pledge ID.</li>
