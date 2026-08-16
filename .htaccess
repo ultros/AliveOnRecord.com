@@ -1,0 +1,31 @@
+# AliveOnRecord.com — optional Apache shared-hosting rules.
+# The website does not depend on this file to render.
+
+# Do not expose directory contents when an index file is absent.
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Canonicalize the public hostname. These conditions avoid affecting local
+    # development or alternate staging hostnames.
+    RewriteCond %{HTTP_HOST} ^www\.aliveonrecord\.com$ [NC]
+    RewriteRule ^ https://aliveonrecord.com%{REQUEST_URI} [R=301,L,NE]
+
+    # Redirect the production apex domain to HTTPS.
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP_HOST} ^aliveonrecord\.com$ [NC]
+    RewriteRule ^ https://aliveonrecord.com%{REQUEST_URI} [R=301,L,NE]
+
+    # Block hidden files except the standard ACME validation directory.
+    RewriteRule (^|/)\.(?!well-known(?:/|$)) - [F,L]
+</IfModule>
+
+# Block common backup, log, database, and local configuration artifacts.
+<FilesMatch "(?i)(?:^\.env|^composer\.(?:json|lock)$|\.(?:bak|conf|ini|log|sql|sqlite|swp))$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
+</IfModule>
