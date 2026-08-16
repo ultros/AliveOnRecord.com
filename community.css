@@ -231,6 +231,7 @@ main {
 .site-footer__grid nav { display: grid; gap: .45rem; }
 .site-footer__grid nav a { color: var(--muted); text-decoration: none; }
 .site-footer__bottom { width: min(calc(100% - 2rem), var(--max)); margin: 1.5rem auto 0; padding-top: 1rem; border-top: 1px solid var(--line); color: var(--quiet); font-size: .7rem; }
+.affirmative-page .site-footer__grid { grid-template-columns: 1.3fr 1fr; }
 
 .eyebrow {
     margin: 0 0 1rem;
@@ -301,7 +302,50 @@ input[type="text"] {
     font: inherit;
 }
 
-input[type="text"]:focus { border-color: var(--green); }
+textarea {
+    width: 100%;
+    min-height: 132px;
+    padding: .9rem 1rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 9px;
+    background: #0d110e;
+    color: var(--ink);
+    font: inherit;
+    line-height: 1.55;
+    resize: vertical;
+}
+
+input[type="text"]:focus,
+textarea:focus { border-color: var(--green); }
+
+.pledge-options { margin: 1.8rem 0 0; padding: 0; border: 0; }
+.pledge-options legend { margin-bottom: .85rem; font-size: .84rem; font-weight: 720; }
+
+.pledge-option {
+    display: grid;
+    grid-template-columns: 1.25rem 1fr;
+    gap: .8rem;
+    align-items: start;
+    margin-top: .65rem;
+    padding: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    background: rgba(255,255,255,.018);
+    cursor: pointer;
+}
+
+.pledge-option:hover,
+.pledge-option:has(input:checked) {
+    border-color: rgba(155,226,155,.62);
+    background: rgba(155,226,155,.06);
+}
+
+.pledge-option input { width: 1.15rem; height: 1.15rem; margin: .22rem 0 0; accent-color: var(--green); }
+.pledge-option span { color: #e1e5df; font-family: Georgia, "Times New Roman", serif; font-size: 1rem; line-height: 1.55; }
+.pledge-option--custom span { font-family: inherit; font-size: .9rem; }
+.pledge-option--custom strong { color: var(--green); }
+.custom-pledge-field { padding-top: 1rem; border-top: 1px solid var(--line); }
+.confirmation-pledge { margin: 1rem 0; color: var(--ink); font-family: Georgia, "Times New Roman", serif; font-size: 1.05rem; }
 
 .checks { margin: 1.7rem 0 0; padding: 0; border: 0; }
 .checks legend { margin-bottom: .85rem; font-size: .84rem; font-weight: 720; }
@@ -363,6 +407,7 @@ input[type="text"]:focus { border-color: var(--green); }
 }
 
 .notice { border-color: rgba(230,189,115,.3); background: rgba(52,41,22,.42); color: #e5d2af; }
+.affirmative-page .notice { border-color: rgba(155,226,155,.3); background: rgba(23,53,30,.42); color: #d9f3d9; }
 .error-box { border-color: rgba(241,169,161,.35); background: rgba(53,29,27,.62); color: #f0c3bd; }
 .error-box h2, .success-box h2 { margin: 0 0 .45rem; font-size: 1rem; }
 .error-box ul { margin: .4rem 0 0; padding-left: 1.2rem; }
@@ -410,6 +455,7 @@ input[type="text"]:focus { border-color: var(--green); }
 
 @media (max-width: 760px) {
     .page-grid, .pledge-list, .landing-hero, .truth-panel, .steps-grid, .resource-grid, .site-footer__grid { grid-template-columns: 1fr; }
+    .affirmative-page .site-footer__grid { grid-template-columns: 1fr; }
     .landing-hero { min-height: auto; }
     .hero-record { min-height: 260px; max-width: 320px; }
     .crisis-bar__inner { justify-content: flex-start; overflow-x: auto; white-space: nowrap; }

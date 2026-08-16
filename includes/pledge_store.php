@@ -19,8 +19,8 @@ function aor_config(): array
         'database_path' => is_string($configuredPath) && trim($configuredPath) !== ''
             ? trim($configuredPath)
             : $defaultPath,
-        'pledge_version' => '2.0',
-        'consent_version' => '2.0',
+        'pledge_version' => '3.0',
+        'consent_version' => '3.0',
         'removal_email' => 'jesse.shelley@aliveonrecord.com',
         'public_list_limit' => 100,
     ];
@@ -29,6 +29,17 @@ function aor_config(): array
 function aor_escape(mixed $value): string
 {
     return htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
+function aor_pledge_options(): array
+{
+    return [
+        'whole-life' => 'I pledge to live my life fully, honor every chapter, and remain committed to my future for all my days.',
+        'choose-life' => 'I choose my whole life—permanently. I will keep growing, loving, creating, and showing up for every day ahead.',
+        'long-journey' => 'I am here for the long journey. I pledge to live, connect, contribute, and welcome every unwritten chapter.',
+        'life-in-full' => 'My life is mine to live in full. I commit to protecting it, building it, and carrying it forward for the rest of my natural life.',
+        'every-season' => 'I pledge myself to every season ahead—to the people I will love, the work I will do, the joy I will discover, and the person I will become.',
+    ];
 }
 
 function aor_path_is_absolute(string $path): bool
@@ -77,12 +88,25 @@ function aor_database(): PDO
             id INTEGER PRIMARY KEY,
             public_id TEXT NOT NULL UNIQUE,
             display_name TEXT NOT NULL CHECK (length(display_name) BETWEEN 2 AND 80),
+            pledge_text TEXT,
+            pledge_source TEXT,
             pledge_version TEXT NOT NULL,
             consent_version TEXT NOT NULL,
             removal_token_hash TEXT NOT NULL CHECK (length(removal_token_hash) = 64),
             submitted_at_utc TEXT NOT NULL
         )"
     );
+
+    $columns = $database->query('PRAGMA table_info(pledges)')->fetchAll();
+    $columnNames = array_map(static fn (array $column): string => (string) $column['name'], $columns);
+
+    if (!in_array('pledge_text', $columnNames, true)) {
+        $database->exec('ALTER TABLE pledges ADD COLUMN pledge_text TEXT');
+    }
+
+    if (!in_array('pledge_source', $columnNames, true)) {
+        $database->exec('ALTER TABLE pledges ADD COLUMN pledge_source TEXT');
+    }
 
     $database->exec(
         "CREATE INDEX IF NOT EXISTS idx_pledges_submitted
@@ -103,6 +127,23 @@ function aor_normalize_display_name(string $name): string
     return trim($name);
 }
 
+function aor_normalize_pledge_text(string $pledgeText): string
+{
+    $pledgeText = trim($pledgeText);
+    $pledgeText = preg_replace('/[\x00-\x1F\x7F]/u', ' ', $pledgeText) ?? '';
+    $pledgeText = preg_replace('/\s+/u', ' ', $pledgeText) ?? '';
+
+    return trim($pledgeText);
+}
+
+function aor_public_text_is_affirmative(string $text): bool
+{
+    return preg_match(
+        '/\b(?:suicid(?:e|al)|self[-\s]?harm|crisis|emergency|danger|distress|depress(?:ion|ed)?|hopeless(?:ness)?|problem|issue|death|dying|kill(?:ing|ed)?|safe|safety|pain|struggl\w*|suffer\w*)\b/ui',
+        $text
+    ) !== 1;
+}
+
 function aor_text_length(string $value): int
 {
     $count = preg_match_all('/./us', $value, $matches);
@@ -120,8 +161,39 @@ function aor_create_removal_code(): string
     return 'AOR-REMOVE-' . strtoupper(bin2hex(random_bytes(12)));
 }
 
-function aor_create_pledge(string $displayName): array
+function aor_create_pledge(string $displayName, string $pledgeText, string $pledgeSource): array
 {
+    $displayName = aor_normalize_display_name($displayName);
+    $pledgeText = aor_normalize_pledge_text($pledgeText);
+    $pledgeSource = trim($pledgeSource);
+    $pledgeOptions = aor_pledge_options();
+    $validSources = array_keys($pledgeOptions);
+    $validSources[] = 'custom';
+
+    if (aor_text_length($displayName) < 2 || aor_text_length($displayName) > 80) {
+        throw new InvalidArgumentException('The public display name is invalid.');
+    }
+
+    if (!aor_public_text_is_affirmative($displayName)) {
+        throw new InvalidArgumentException('The public display name is not appropriate for the pledge record.');
+    }
+
+    if (aor_text_length($pledgeText) < 20 || aor_text_length($pledgeText) > 500) {
+        throw new InvalidArgumentException('The pledge text is invalid.');
+    }
+
+    if (!in_array($pledgeSource, $validSources, true)) {
+        throw new InvalidArgumentException('The pledge source is invalid.');
+    }
+
+    if ($pledgeSource === 'custom' && !aor_public_text_is_affirmative($pledgeText)) {
+        throw new InvalidArgumentException('The custom pledge must be affirmative.');
+    }
+
+    if ($pledgeSource !== 'custom' && $pledgeText !== $pledgeOptions[$pledgeSource]) {
+        throw new InvalidArgumentException('The prepared pledge text does not match its source.');
+    }
+
     $database = aor_database();
     $config = aor_config();
     $submittedAt = (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format(DateTimeInterface::ATOM);
@@ -134,13 +206,15 @@ function aor_create_pledge(string $displayName): array
         try {
             $statement = $database->prepare(
                 'INSERT INTO pledges
-                    (public_id, display_name, pledge_version, consent_version, removal_token_hash, submitted_at_utc)
+                    (public_id, display_name, pledge_text, pledge_source, pledge_version, consent_version, removal_token_hash, submitted_at_utc)
                  VALUES
-                    (:public_id, :display_name, :pledge_version, :consent_version, :removal_token_hash, :submitted_at_utc)'
+                    (:public_id, :display_name, :pledge_text, :pledge_source, :pledge_version, :consent_version, :removal_token_hash, :submitted_at_utc)'
             );
             $statement->execute([
                 ':public_id' => $publicId,
                 ':display_name' => $displayName,
+                ':pledge_text' => $pledgeText,
+                ':pledge_source' => $pledgeSource,
                 ':pledge_version' => $config['pledge_version'],
                 ':consent_version' => $config['consent_version'],
                 ':removal_token_hash' => $removalTokenHash,
@@ -150,6 +224,8 @@ function aor_create_pledge(string $displayName): array
             return [
                 'public_id' => $publicId,
                 'display_name' => $displayName,
+                'pledge_text' => $pledgeText,
+                'pledge_source' => $pledgeSource,
                 'pledge_version' => $config['pledge_version'],
                 'submitted_at_utc' => $submittedAt,
                 'removal_code' => $removalCode,
@@ -169,7 +245,7 @@ function aor_list_public_pledges(): array
     $config = aor_config();
     $limit = max(1, min(500, (int) $config['public_list_limit']));
     $statement = aor_database()->prepare(
-        'SELECT public_id, display_name, pledge_version, submitted_at_utc
+        'SELECT public_id, display_name, pledge_text, pledge_source, pledge_version, submitted_at_utc
          FROM pledges
          ORDER BY submitted_at_utc DESC, id DESC
          LIMIT :limit'

@@ -17,7 +17,7 @@ try {
     )->fetchAll(PDO::FETCH_COLUMN);
     $queryPlan = $database->query(
         "EXPLAIN QUERY PLAN
-         SELECT public_id, display_name, pledge_version, submitted_at_utc
+         SELECT public_id, display_name, pledge_text, pledge_source, pledge_version, submitted_at_utc
          FROM pledges
          ORDER BY submitted_at_utc DESC, id DESC
          LIMIT 100"

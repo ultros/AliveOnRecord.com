@@ -15,8 +15,8 @@ try {
 }
 
 aor_render_page_start([
-    'title' => 'Alive On Record | A Public Pledge for Life & Support',
-    'description' => 'Make a voluntary public pledge for life, connection, and help-seeking. Find clear suicide prevention guidance, safety-planning resources, and crisis support.',
+    'title' => 'Alive On Record | Make a Permanent Life Pledge',
+    'description' => 'Choose a permanent public pledge to live your whole life fully, write your own commitment, and explore separate suicide prevention resources.',
     'canonical_path' => '',
     'active' => 'home',
     'schema_type' => 'WebPage',
@@ -27,12 +27,12 @@ aor_render_page_start([
 <main id="main-content">
     <section class="landing-hero" aria-labelledby="home-title">
         <div>
-            <p class="eyebrow">Life · Connection · Support</p>
-            <h1 id="home-title">Take the next safe step.</h1>
-            <p class="lede">Alive On Record is a public place to make a voluntary pledge to keep reaching for life, tell someone when you need help, and choose connection over isolation.</p>
+            <p class="eyebrow">Your life · All your days</p>
+            <h1 id="home-title">Choose your whole life.</h1>
+            <p class="lede">Alive On Record is a public place to make a permanent commitment to living fully—through every season, chapter, and unwritten day ahead.</p>
             <div class="button-row">
-                <a class="button" href="take-pledge.php">Take the public pledge</a>
-                <a class="button button--secondary" href="help-now.php">I need help now</a>
+                <a class="button" href="take-pledge.php">Make your life pledge</a>
+                <a class="button button--secondary" href="pledges.php">Read public pledges</a>
             </div>
         </div>
         <aside class="hero-record" aria-label="Community pledge status">
@@ -47,11 +47,11 @@ aor_render_page_start([
     <section class="truth-panel" aria-labelledby="pledge-means-title">
         <div>
             <p class="eyebrow">What this pledge means</p>
-            <h2 id="pledge-means-title">A commitment to reach for support—not a promise to handle pain alone.</h2>
+            <h2 id="pledge-means-title">A permanent yes to every chapter ahead.</h2>
         </div>
         <div>
-            <p>The Alive On Record pledge asks people to choose the next safe step: pause, connect with someone, reduce immediate danger, and reach crisis or professional support when suicidal thoughts arise.</p>
-            <p><strong>A pledge cannot prove that someone is safe.</strong> It is not a “no-suicide contract,” clinical risk assessment, treatment plan, or replacement for an evidence-based safety plan.</p>
+            <p>Choose from five carefully written life pledges or write your own. Every option expresses an enduring commitment to live the whole of your life fully and deliberately.</p>
+            <p><strong>Your exact words become part of the public record.</strong> The commitment is permanent; the published record can still be removed using the private code issued to you.</p>
         </div>
     </section>
 
@@ -61,8 +61,8 @@ aor_render_page_start([
             <h2 id="how-title">One clear statement. Three simple steps.</h2>
         </div>
         <ol class="steps-grid">
-            <li><span>01</span><h3>Read the pledge</h3><p>Understand the help-seeking commitment and the limits of a public pledge.</p></li>
-            <li><span>02</span><h3>Publish your name</h3><p>Use a public display name and consent to a dated, self-submitted record.</p></li>
+            <li><span>01</span><h3>Choose your words</h3><p>Select one of five permanent-life pledges or write a personal commitment of your own.</p></li>
+            <li><span>02</span><h3>Place it on record</h3><p>Publish your chosen name, exact pledge, and the date your commitment was made.</p></li>
             <li><span>03</span><h3>Keep your removal code</h3><p>A private one-time code lets you request permanent deletion of your entry.</p></li>
         </ol>
     </section>

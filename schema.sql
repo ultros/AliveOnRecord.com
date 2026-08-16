@@ -5,6 +5,8 @@ CREATE TABLE IF NOT EXISTS pledges (
     id INTEGER PRIMARY KEY,
     public_id TEXT NOT NULL UNIQUE,
     display_name TEXT NOT NULL CHECK (length(display_name) BETWEEN 2 AND 80),
+    pledge_text TEXT,
+    pledge_source TEXT,
     pledge_version TEXT NOT NULL,
     consent_version TEXT NOT NULL,
     removal_token_hash TEXT NOT NULL CHECK (length(removal_token_hash) = 64),

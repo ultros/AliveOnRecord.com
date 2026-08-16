@@ -28,22 +28,23 @@ try {
 ?>
 <?php
 aor_render_page_start([
-    'title' => 'Public Life & Safety Pledges | Alive On Record',
-    'description' => 'View self-submitted public pledges to keep reaching for life, seek connection, and contact crisis or professional support when needed.',
+    'title' => 'Permanent Life Pledges | Alive On Record',
+    'description' => 'Read permanent public commitments from people who have pledged to live their whole lives fully, for all their days.',
     'canonical_path' => 'pledges.php',
     'active' => 'wall',
     'schema_type' => 'CollectionPage',
     'nonce' => $nonce,
+    'affirmative' => true,
 ]);
 ?>
 
 <main id="main-content">
-    <p class="eyebrow">Community record</p>
-    <h1>Public pledges</h1>
-    <p class="lede">A record of people who have voluntarily committed to keep reaching for life, seek connection, and take the next safe step.</p>
+    <p class="eyebrow">A lasting community record</p>
+    <h1>Permanent life pledges</h1>
+    <p class="lede">Words from people who have chosen their whole lives and placed that commitment on the public record.</p>
 
     <div class="notice" role="note">
-        These pledges are self-submitted. Alive On Record does not independently verify participant identity or continuously verify anyone’s safety or present condition.
+        Each new entry displays the exact pledge chosen or written by its author. Earlier entries remain part of the same permanent-life record.
     </div>
 
     <div class="wall-header">
@@ -66,9 +67,10 @@ aor_render_page_start([
         <section class="pledge-list" aria-label="Published community pledges">
             <?php foreach ($pledges as $pledge): ?>
                 <article class="pledge-card">
-                    <span class="pledge-card__badge">Self-submitted · Identity unverified</span>
+                    <span class="pledge-card__badge">Permanent life pledge</span>
                     <h2><?= aor_escape($pledge['display_name']) ?></h2>
-                    <p>“I choose to keep reaching for life and connection, and to take the next safe step when I need help.”</p>
+                    <?php $pledgeText = trim((string) ($pledge['pledge_text'] ?? '')); ?>
+                    <p><?= $pledgeText !== '' ? '“' . aor_escape($pledgeText) . '”' : 'Permanent life commitment recorded.' ?></p>
                     <div class="pledge-card__meta">
                         <?= aor_escape($pledge['public_id']) ?><br>
                         PLEDGE VERSION <?= aor_escape($pledge['pledge_version']) ?><br>
@@ -82,4 +84,4 @@ aor_render_page_start([
     <p class="removal-note">To request permanent removal of a pledge, email <a href="mailto:<?= aor_escape($config['removal_email']) ?>?subject=Alive%20On%20Record%20pledge%20removal%20request"><?= aor_escape($config['removal_email']) ?></a> and include the pledge ID and private removal code issued at submission.</p>
 </main>
 
-<?php aor_render_page_end(); ?>
+<?php aor_render_page_end(['affirmative' => true]); ?>

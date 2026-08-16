@@ -1,10 +1,11 @@
 # AliveOnRecord.com
 
-The public source for **Alive On Record**, a community life-and-safety pledge
-platform with suicide-prevention information and crisis-support pathways.
+The public source for **Alive On Record**, a permanent-life pledge platform
+with separate suicide-prevention information and crisis-support pathways.
 
-The site is intentionally small and auditable: a PHP community-pledge platform,
-a public pledge wall backed by SQLite, focused suicide-prevention resource
+The site is intentionally small and auditable: a PHP community-pledge platform
+with five prepared statements and a custom-writing option, a public pledge wall
+backed by SQLite, focused suicide-prevention resource
 pages, and one optional Apache configuration file. It uses no external
 libraries and has no build step. It targets PHP 8 or newer on ordinary shared
 hosting.
@@ -16,9 +17,11 @@ each prevention page. A pledge must never be represented as proof of safety, a
 clinical risk assessment, a no-suicide contract, treatment, or a replacement
 for an individualized safety plan.
 
-The pledge wording and consent version are configured in the application code.
-Increase both versions when the meaning of the accepted pledge or publication
-consent changes.
+Prepared pledge wording and consent versions are configured in the application
+code. Increase both versions when the meaning of the accepted pledge or
+publication consent changes. Custom pledges are stored as the participant's
+exact normalized text. Server-side validation keeps custom entries affirmative
+and centered on a permanent commitment to living fully.
 
 ## Local preview
 
@@ -40,9 +43,10 @@ write that directory. To use a different non-public absolute path, set the
 
 The audited schema is in `schema.sql`; the application creates the same schema
 on first use. Participant email addresses and IP addresses are not stored in
-the pledge table. Public records contain only a display name, random pledge ID,
-pledge/consent versions, and submission time. A one-time removal code is shown
-after submission; only its SHA-256 hash is stored privately in SQLite.
+the pledge table. Public records contain only a display name, exact pledge text,
+pledge source, random pledge ID, pledge/consent versions, and submission time. A
+one-time removal code is shown after submission; only its SHA-256 hash is stored
+privately in SQLite.
 
 Removal requests are directed to `jesse.shelley@aliveonrecord.com`. After
 verifying the requested pledge ID, run the CLI-only removal tool:
