@@ -309,6 +309,41 @@
             font-size: .75rem;
         }
 
+        .community-callout {
+            margin-top: 1rem;
+            padding: clamp(1.5rem, 4vw, 2.25rem);
+            border: 1px solid rgba(155,226,155,.34);
+            border-radius: 14px;
+            background: rgba(23,53,30,.44);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+        }
+
+        .community-callout h2 { margin: 0 0 .35rem; font-size: 1.25rem; }
+        .community-callout p { margin: 0; color: var(--muted); }
+
+        .community-button {
+            flex: 0 0 auto;
+            display: inline-flex;
+            min-height: 48px;
+            padding: .75rem 1.1rem;
+            border: 1px solid var(--green);
+            border-radius: 9px;
+            align-items: center;
+            justify-content: center;
+            background: var(--green);
+            color: #0b120c;
+            font-size: .74rem;
+            font-weight: 780;
+            letter-spacing: .08em;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+
+        .community-button:hover { background: #b4efb4; color: #071008; }
+
         footer {
             padding: 2rem 0;
             border-top: 1px solid var(--line);
@@ -334,6 +369,8 @@
             .status-item:nth-last-child(-n+2) { border-bottom: 0; }
             .affirmations ul, .signature-block, .context-grid { grid-template-columns: 1fr; }
             .signature-block { gap: 2rem; }
+            .community-callout { display: block; }
+            .community-button { margin-top: 1rem; }
         }
 
         @media (max-width: 460px) {
@@ -383,6 +420,7 @@
             .context-card h2 { margin-bottom: .04in; color: #222; }
             .context-card p, .record-note { color: #444; }
             .record-note { margin-top: .15in; }
+            .community-callout { display: none; }
             footer { display: none; }
         }
     </style>
@@ -461,6 +499,14 @@
             <p>This is a personal pledge and public statement of intent. It is not presented as a sworn affidavit, medical assessment, legal finding, or substitute for emergency assistance.</p>
         </aside>
     </div>
+
+    <aside class="community-callout" aria-labelledby="community-heading">
+        <div>
+            <h2 id="community-heading">Make this pledge your own</h2>
+            <p>Others can now publish the same life and safety commitment under their own public display name.</p>
+        </div>
+        <a class="community-button" href="take-pledge.php">Take the pledge</a>
+    </aside>
 
     <p class="record-note">Record: AOR-PLEDGE-0001 · Version 0.1.0 · Original publication: August 16, 2026 · Latest revision: August 16, 2026</p>
 </main>

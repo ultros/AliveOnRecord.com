@@ -7,6 +7,9 @@ Options -Indexes
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
+    # Application internals are never public web endpoints.
+    RewriteRule ^(?:includes|bin)(?:/|$) - [F,L,NC]
+
     # Canonicalize the public hostname. These conditions avoid affecting local
     # development or alternate staging hostnames.
     RewriteCond %{HTTP_HOST} ^www\.aliveonrecord\.com$ [NC]
@@ -22,7 +25,7 @@ Options -Indexes
 </IfModule>
 
 # Block common backup, log, database, and local configuration artifacts.
-<FilesMatch "(?i)(?:^\.env|^composer\.(?:json|lock)$|\.(?:bak|conf|ini|log|sql|sqlite|swp))$">
+<FilesMatch "(?i)(?:^\.env|^composer\.(?:json|lock)$|\.(?:bak|conf|ini|log|sql|sqlite|sqlite-shm|sqlite-wal|swp))$">
     Require all denied
 </FilesMatch>
 

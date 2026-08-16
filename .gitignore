@@ -1,0 +1,5 @@
+# Runtime database files and local test state
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+.tmp-pledge-test/

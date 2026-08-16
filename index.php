@@ -634,6 +634,7 @@ $statusIsActive = strtoupper($recordStatus) === 'ACTIVE';
                 <li><a href="#continuity">Continuity</a></li>
                 <li><a href="#verification">Verification</a></li>
                 <li><a href="pledge.html">Personal Pledge</a></li>
+                <li><a href="take-pledge.php">Take the Pledge</a></li>
             </ul>
         </nav>
     </div>
@@ -667,6 +668,8 @@ $statusIsActive = strtoupper($recordStatus) === 'ACTIVE';
                     <div>
                         <p>This site maintains a public, dated record of my personal safety intentions, continuity information, and supporting documentation.</p>
                         <a class="text-link" href="pledge.html">Read my personal pledge</a>
+                        <br>
+                        <a class="text-link" href="take-pledge.php">Make your own public pledge</a>
                     </div>
                     <div class="record-code">STATEMENT <?= e($statementId) ?><br>RECORD VERSION <?= e($recordVersion) ?></div>
                 </div>
